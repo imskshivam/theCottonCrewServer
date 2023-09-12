@@ -93,25 +93,37 @@ productRouter.delete('/products/:id', async (req, res) => {
 // Route for adding a new product with an image upload
 productRouter.post('/products', async (req, res) => {
   try {
-    const { name, description, price, category, tag ,} = req.body;
-    const product = new Product({ name, description, price, category, tag });
-   
+    const { name, description, price, category, tags } = req.body;
 
-    // Check if an image file was uploaded
-    if (req.file) {
-      const imageUrl = await uploadImage.uploadImage(req.file);
-      product.imageUrl=imageUrl;
-      // You can now use the imageUrl as the value for the 'Image' field
-    }else{
-      return res.status(404).json({ error: 'image not found' });
+    // Create a new product instance
+    const product = new Product({ name, description, price, category, tags });
+
+    // Check if images were uploaded
+    if (req.files && req.files.length > 0) {
+      const imageUrls = [];
+
+      // Loop through the uploaded image files
+      for (const file of req.files) {
+        // Upload the image to Cloudinary
+        const result = await cloudinary.uploader.upload(file.path);
+
+        // Add the Cloudinary image URL to the array
+        imageUrls.push(result.secure_url);
+      }
+
+      // Set the 'Images' field of the product with the array of image URLs
+      product.Images = imageUrls;
+    } else {
+      return res.status(400).json({ error: 'Images not found in the request' });
     }
 
+    // Save the product with the image URLs
     await product.save();
 
     res.status(201).json({ message: 'Product created successfully' });
   } catch (error) {
+    console.error(error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
-
 module.exports = productRouter;
