@@ -15,9 +15,13 @@ const connectDB = require('./config/db');
 connectDB();
 const authRouter = require('./routes/auth');
 const productRoutes = require('./routes/productRoute');
+const cartRoutes = require('./routes/cart');
+// const profileRoutes = require('./routes/profile');
 // Use product routes
 app.use('/api', productRoutes);
 app.use('/auth',authRouter);
+app.use('/cart',cartRoutes);
+// app.use('/profile',profileRoutes);
 
 app.use(cors({ origin:true, credentials:true }));
 app.listen(PORT,"0.0.0.0", ()=>{
