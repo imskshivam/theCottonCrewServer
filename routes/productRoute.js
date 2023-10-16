@@ -5,28 +5,60 @@ const Product = require('../models/product');
 const uploadImage=require('../services/uploadService');// Assuming the models.js file is in the parent directory
 
 // Route to get all products
-productRouter.get('/products', async (req, res) => {
+
+
+
+productRouter.get('/products/:category', async (req, res) => {
   try {
-    const products = await Product.find();
-    res.json(products);
+    const { category } = req.params;
+    const products = await Product.find({ category }); // Find products with the specified category
+    
+    // Sort products based on the number of matching tags (e.g., for "tshirt")
+    products.sort((a, b) => {
+      const matchingTagsA = a.tags.filter(tag => tag === category).length;
+      const matchingTagsB = b.tags.filter(tag => tag === category).length;
+      return matchingTagsB - matchingTagsA; // Sort in descending order of matching tags
+    });
+    
+    res.status(200).json(products);
   } catch (err) {
     res.status(500).json({ error: 'Error fetching products' });
   }
 });
 
 
-productRouter.get('/products/:id', async (req, res) => {
-  const productId = req.params.id;
+
+productRouter.get('/products', async (req, res) => {
+  const productId = req.query.productId; // Access the 'productId' parameter from the query string
+  console.log('Received request for product ID:', productId);
+
   try {
-    const product = await Product.findById(productId);
+    const product = await Product.findOne({ productId });
+    console.log('Product found:', product);
+
     if (!product) {
       return res.status(404).json({ error: 'Product not found' });
     }
-    res.json(product);
+    res.status(200).json(product);
   } catch (err) {
+    console.error('Error fetching product:', err);
     res.status(500).json({ error: 'Error fetching product' });
   }
 });
+
+
+
+
+// Add a new route to get all products
+productRouter.get('/products', async (req, res) => {
+  try {
+    const products = await Product.find();
+    res.status(200).json(products);
+  } catch (error) {
+    res.status(500).json({ error: 'Error fetching products' });
+  }
+});
+
 
 
 // productRouter.post('/products', async (req, res) => {
@@ -99,20 +131,13 @@ productRouter.post('/products', async (req, res) => {
     const product = new Product({ name, description, price, category, tags });
 
     // Check if images were uploaded
-    if (req.files && req.files.length > 0) {
+    if (true) {
       const imageUrls = [];
 
-      // Loop through the uploaded image files
-      for (const file of req.files) {
-        // Upload the image to Cloudinary
-        const result = await cloudinary.uploader.upload(file.path);
-
-        // Add the Cloudinary image URL to the array
-        imageUrls.push(result.secure_url);
-      }
+     
 
       // Set the 'Images' field of the product with the array of image URLs
-      product.Images = imageUrls;
+      product.Images = "";
     } else {
       return res.status(400).json({ error: 'Images not found in the request' });
     }

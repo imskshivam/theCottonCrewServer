@@ -4,7 +4,7 @@ const { v4: uuidv4 } = require('uuid');
 
 // Define the user schema
 const userSchema = new mongoose.Schema({
-  userId: { type: String, default: uuidv4 },
+  userId: { type: String, default: uuidv4},
   name: { type: String },
   phoneNumber: { type: String},
   address: { type: String},
