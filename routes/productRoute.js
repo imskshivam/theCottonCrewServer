@@ -5,9 +5,6 @@ const Product = require('../models/product');
 const uploadImage=require('../services/uploadService');// Assuming the models.js file is in the parent directory
 
 // Route to get all products
-
-
-
 productRouter.get('/products/:category', async (req, res) => {
   try {
     const { category } = req.params;
@@ -28,37 +25,18 @@ productRouter.get('/products/:category', async (req, res) => {
 
 
 
-productRouter.get('/products', async (req, res) => {
-  const productId = req.query.productId; // Access the 'productId' parameter from the query string
-  console.log('Received request for product ID:', productId);
-
+productRouter.get('/products/:id', async (req, res) => {
+  const productId = req.params.id;
   try {
-    const product = await Product.findOne({ productId });
-    console.log('Product found:', product);
-
+    const product = await Product.findById(productId);
     if (!product) {
       return res.status(404).json({ error: 'Product not found' });
     }
     res.status(200).json(product);
   } catch (err) {
-    console.error('Error fetching product:', err);
     res.status(500).json({ error: 'Error fetching product' });
   }
 });
-
-
-
-
-// Add a new route to get all products
-productRouter.get('/products', async (req, res) => {
-  try {
-    const products = await Product.find();
-    res.status(200).json(products);
-  } catch (error) {
-    res.status(500).json({ error: 'Error fetching products' });
-  }
-});
-
 
 
 // productRouter.post('/products', async (req, res) => {
@@ -131,13 +109,20 @@ productRouter.post('/products', async (req, res) => {
     const product = new Product({ name, description, price, category, tags });
 
     // Check if images were uploaded
-    if (true) {
+    if (req.files && req.files.length > 0) {
       const imageUrls = [];
 
-     
+      // Loop through the uploaded image files
+      for (const file of req.files) {
+        // Upload the image to Cloudinary
+        const result = await cloudinary.uploader.upload(file.path);
+
+        // Add the Cloudinary image URL to the array
+        imageUrls.push(result.secure_url);
+      }
 
       // Set the 'Images' field of the product with the array of image URLs
-      product.Images = "";
+      product.Images = imageUrls;
     } else {
       return res.status(400).json({ error: 'Images not found in the request' });
     }

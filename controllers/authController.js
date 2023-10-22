@@ -66,7 +66,8 @@ async function verifyOtp(req,res) {
     return res.status(400).json({message:'Invalid OTP'});
    }else {
 
-    const getUser = await User.findOne({mobile:phone});
+    const getUser = await User.findOne({phoneNumber:phone});
+    console.log(getUser);
     if (getUser!=null) {
       return res.status(200).json({user:getUser});
     }
