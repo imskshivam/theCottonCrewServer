@@ -48,18 +48,32 @@ userRouter.post('/getUserById', async (req, res) => {
 });
 
 
-  // Update a user by ID
-  userRouter.put('/users/:userId', async (req, res) => {
-    try {
-      const updatedUser = await User.findOneAndUpdate(req.params.userId, req.body, { new: true });
-      if (!updatedUser) {
-        res.status(404).json({ error: 'User not found' });
-      } else {
-        res.status(200).json(updatedUser);
-      }
-    } catch (error) {
-      res.status(500).json({ error: error.message });
+ // Update a user by ID
+userRouter.put('/updateUserById', async (req, res) => {
+  try {
+    const { phoneNumber, accessToken } = req.body;
+
+    // Ensure that at least one field to update is present in the request
+   
+
+    // Find the user by ID
+    const user = await User.findOne({ accessToken });
+
+    if (!user) {
+      res.status(404).json({ error: 'User not found' });
+      return;
     }
-  });
+
+    // Update the user's fields that are provided in the request body
+    user.phoneNumber=phoneNumber;
+
+    // Save the updated user
+    const updatedUser = await user.save();
+    res.status(200).json(updatedUser);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 
   module.exports = userRouter;

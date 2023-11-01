@@ -69,7 +69,7 @@ async function verifyOtp(req,res) {
     const getUser = await User.findOne({phoneNumber:phone});
     console.log(getUser);
     if (getUser!=null) {
-      return res.status(200).json({user:getUser});
+      return res.status(200).json({user:getUser,isNew:false});
     }
 
     const user  = new User();
@@ -106,7 +106,7 @@ async function verifyOtp(req,res) {
 
     
      
-   return res.status(200).json({user:savedUser});
+   return res.status(200).json({user:savedUser,isNew:true});
    }
 
 
@@ -185,17 +185,21 @@ async function verifyOtp(req,res) {
     try {
      
       const token = req.header('x-auth-token');
+      console.log(token);
       
       if (!token) {
-        return res.json(false);
+        console.log("dfd"); return res.json(false);
       }
 
      const verified = await tokenService.verifyAccessToken(token);
+     console.log(verified);
      if (!verified) {
+      console.log("sgdgg");
       return res.json(false);
      }
 
-     const user = await User.findOne({mobile:verified.id});
+     const user = await User.findOne({phoneNumber:verified.id});
+     console.log(user);
 
      if (!user) {
       return res.json(false);
